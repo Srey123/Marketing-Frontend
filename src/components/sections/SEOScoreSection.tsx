@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { ArrowUpRight, ArrowDownRight, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
+import { ArrowUpRight,  CheckCircle, XCircle, AlertCircle } from 'lucide-react';
 
 const SEOScoreSection = () => {
   const [progress, setProgress] = useState(0);

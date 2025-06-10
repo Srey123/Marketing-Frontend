@@ -51,7 +51,7 @@ interface BlogHistoryItem {
 
 const Dashboard = () => {
   const {
-    isLoggedIn, openLoginModal, user_id, setBlogHistory, blogHistory,
+    isLoggedIn, openLoginModal, user_id, setBlogHistory, 
     isGenerating, setIsGenerating,
     isBlogGenerated, setIsBlogGenerated,
     seoScore, setSeoScore,
@@ -874,7 +874,7 @@ const Dashboard = () => {
         const response = await fetch(`http://localhost:8005/api/history?user_id=${user_id}`);
         const data = await response.json();
         if (response.ok && data.success) {
-          const sortedHistory = data.history.sort((a: BlogHistoryItem, b: BlogHistoryItem) =>
+          const sortedHistory = data.history.sort((b: BlogHistoryItem) =>
             new Date(b.timestamp).getTime() - new Date(b.timestamp).getTime()
           );
           setBlogHistory(sortedHistory);
