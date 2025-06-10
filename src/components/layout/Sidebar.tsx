@@ -16,11 +16,7 @@ const Sidebar = () => {
         <nav className="space-y-4">
           {/* --- Your site-logo.svg Image (using <img> tag) --- */}
           <div className="flex justify-center items-center py-4">
-            <img
-              src="/site-logo.svg"
-              alt="Site Logo"
-              className="h-16 w-auto"
-            />
+            <img src="/site-logo.svg" alt="Site Logo" />
             <span className="sr-only">Site Logo</span>
           </div>
           {/* --- END SVG Image --- */}
