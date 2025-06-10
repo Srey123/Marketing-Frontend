@@ -1,0 +1,181 @@
+/* Overall Page Layout */
+body {
+  font-family: 'Arial', sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #f5f5f5;
+  color: #333;
+}
+
+.min-h-screen {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Header Styling */
+h1 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #2d3748;
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+/* Card Styling */
+.card {
+  background-color: #fff;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  padding: 2rem;
+  max-width: 900px;
+  width: 100%;
+  margin-top: 2rem;
+}
+
+.card-header {
+  margin-bottom: 1.5rem;
+}
+
+.card-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #2d3748;
+}
+
+.card-description {
+  font-size: 1rem;
+  color: #4a5568;
+  margin-top: 0.5rem;
+}
+
+.card-content {
+  margin-top: 1rem;
+}
+
+.card-footer {
+  margin-top: 2rem;
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* Button Styling */
+button {
+  background-color: #3182ce;
+  color: white;
+  padding: 0.75rem 2rem;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+button:hover {
+  background-color: #2b6cb0;
+}
+
+button:disabled {
+  background-color: #e2e8f0;
+  cursor: not-allowed;
+}
+
+/* Textarea Styling */
+textarea {
+  width: 100%;
+  padding: 1rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 1rem;
+  resize: vertical;
+  min-height: 100px;
+}
+
+/* Select Dropdown Styling */
+select {
+  width: 100%;
+  padding: 1rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 1rem;
+  background-color: white;
+  cursor: pointer;
+}
+
+/* Live Preview */
+pre {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  font-size: 1rem;
+  line-height: 1.6;
+  background-color: #f7fafc;
+  padding: 1rem;
+  border-radius: 8px;
+  color: #2d3748;
+  margin-top: 1rem;
+}
+
+/* SEO Metrics Section */
+.seo-metrics {
+  font-size: 1rem;
+  color: #4a5568;
+  margin-top: 1rem;
+}
+
+.seo-metrics div {
+  margin-bottom: 0.5rem;
+}
+
+/* Validation Message */
+.bg-yellow-100 {
+  background-color: #fefcbf;
+}
+
+.text-yellow-900 {
+  color: #9b2c2c;
+}
+
+ul {
+  list-style-type: disc;
+  margin-left: 20px;
+}
+
+button.text-blue-600 {
+  text-decoration: underline;
+  color: #3182ce;
+}
+
+/* Loading Spinner */
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Toast Styling */
+.toast {
+  background-color: #ed8936;
+  color: white;
+  padding: 1rem;
+  border-radius: 8px;
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 1000;
+}
+
+.toast-destructive {
+  background-color: #e53e3e;
+}
+
+.toast-success {
+  background-color: #48bb78;
+}
