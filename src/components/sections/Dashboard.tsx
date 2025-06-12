@@ -1,6 +1,7 @@
 // src/components/auth/Dashboard.tsx
 "use client";
 
+import { flushSync } from 'react-dom';
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -24,7 +25,7 @@ import {
   ThumbsUp,
   BellRing, // BellRing icon for notifications
 } from "lucide-react";
-
+import { toast } from 'sonner';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';
@@ -80,6 +81,7 @@ const Dashboard = () => {
   const livePreviewRef = useRef<HTMLDivElement>(null);
   const liveTrackscore = useRef<HTMLDivElement>(null);
   const topicTextareaRef = useRef<HTMLTextAreaElement>(null);
+  
 
   const [showTopicInput, setShowTopicInput] = useState(true);
 
@@ -102,10 +104,7 @@ const Dashboard = () => {
     currentBlogIdRef.current = currentBlogId;
   }, [currentBlogId]);
 
-  const toast = useCallback((options: { title: string; description: string; variant?: string }) => {
-    console.log(`[Toast ${options.variant || 'default'}]: ${options.title} - ${options.description}`);
-  }, []);
-
+ 
   const logDebug = useCallback((msg: string, data?: unknown) => {
     console.debug(`[🐞 DEBUG]: ${msg}`, data ?? "");
   }, []);
@@ -136,8 +135,7 @@ const Dashboard = () => {
           setRecommendations([]);
           setValidationSuccessMessage("");
 
-          toast({
-            title: "Blog Loaded",
+          toast.success(`Blog Loaded`, {
             description: `Content for blog ID: ${blogId} loaded successfully.`,
           });
         } else {
@@ -145,10 +143,8 @@ const Dashboard = () => {
         }
       } catch (e: any) {
         console.error(`❌ Error fetching blog ID ${blogId}:`, e);
-        toast({
-          title: "Load Error",
+        toast.error("Load Error", {
           description: `Failed to load blog content: ${e.message}`,
-          variant: "destructive",
         });
         setBlogContent(null);
         setIsBlogGenerated(false);
@@ -162,7 +158,7 @@ const Dashboard = () => {
         setPhase("idle");
       }
     },
-    [toast, setIsBlogGenerated, setPhase, setBlogContent, setSeoScore, setIterations, setReasons, setRecommendations, setCurrentBlogId, setTopicBeingGenerated, setValidationSuccessMessage]
+    [ setIsBlogGenerated, setPhase, setBlogContent, setSeoScore, setIterations, setReasons, setRecommendations, setCurrentBlogId, setTopicBeingGenerated, setValidationSuccessMessage]
   );
 
 
@@ -177,20 +173,16 @@ const Dashboard = () => {
       console.log("[DEBUG - saveBlogToDB]: Function entered. Value of currentTopic:", currentTopic, "blogIdToUpdate:", blogIdToUpdate);
       if (typeof currentTopic !== "string" || !currentTopic.trim()) {
         console.warn("saveBlogToDB: Invalid topic for saving, expected non-empty string:", currentTopic);
-        toast({
-          title: "Invalid Topic",
+        toast.error("Invalid Topic", {
           description: "Topic is missing or invalid for saving. Blog not saved.",
-          variant: "destructive",
         });
         return null;
       }
 
       if (!user_id) {
         console.error("saveBlogToDB: Attempted to save blog without a user_id. Current user_id:", user_id);
-        toast({
-          title: "Authentication Error",
+        toast.error("Authentication Error", {
           description: "Cannot save blog: User not logged in or ID missing.",
-          variant: "destructive",
         });
         return null;
       }
@@ -256,18 +248,14 @@ const Dashboard = () => {
             },
             ...prev
           ]);
-          toast({
-            title: "Blog Saved!",
+          toast.success("Blog Saved!", {
             description: `A draft for "${currentTopic}" has been added to your history.`,
-            variant: "success",
           });
           navigate(`/dashboard?blogId=${returnedBlogId}`);
         } else {
           console.log("[DEBUG] saveBlogToDB: Updating existing blog in history. ID:", returnedBlogId, "Topic:", currentTopic);
-          toast({
-            title: "Blog Updated!",
+          toast.success("Blog Updated!", {
             description: `"${currentTopic}" has been optimized and updated.`,
-            variant: "success",
           });
           setBlogHistory(prev => prev.map(item =>
             item.id === returnedBlogId ? {
@@ -287,15 +275,13 @@ const Dashboard = () => {
         };
       } catch (e: any) {
         console.error(`❌ [ERROR] Frontend caught error during DB ${blogIdToUpdate ? 'update' : 'save'} operation:`, e);
-        toast({
-          title: `DB ${blogIdToUpdate ? 'Update' : 'Save'} Error`,
+        toast.error(`DB ${blogIdToUpdate ? 'Update' : 'Save'} Error`, {
           description: `Failed to ${blogIdToUpdate ? 'update' : 'store'} blog content: ${e.message}. Please check console for more details.`,
-          variant: "destructive",
         });
         return null;
       }
     },
-    [toast, setBlogHistory, user_id, navigate]
+    [setBlogHistory, user_id, navigate]
   );
 
   const handleMessage = useCallback(
@@ -331,10 +317,8 @@ const Dashboard = () => {
             setTopicBeingGenerated("");
             setShowTopicInput(true);
             closeGlobalWebSocket();
-            toast({
-              title: "Validation Failed",
+            toast.error("Validation Failed", {
               description: data.message || "Topic not relevant or unclear.",
-              variant: "destructive",
             });
             break;
 
@@ -346,12 +330,12 @@ const Dashboard = () => {
             }
             setReasons("");
             setRecommendations([]);
-            setValidationSuccessMessage(data.message || "Topic validated successfully!");
+            setValidationSuccessMessage(data.message);
             setPhase("generating");
-            toast({
-              title: "Validated",
-              description: data.message || "Topic validated, starting blog generation...",
-            });
+            // toast.success("Validated", {
+            //   description: data.message || "Topic validated, starting blog generation...",
+            // });
+
             break;
 
           case "semrush_waiting":
@@ -359,10 +343,8 @@ const Dashboard = () => {
             setIsWaitingForSemrush(true);
             setSemrushQueuePosition(data.queue_position);
             setActiveSemrushUserId(data.active_user_id);
-            toast({
-              title: "Semrush Queue",
+            toast("Semrush Queue", {
               description: data.message || `You are #${data.queue_position} in queue for Semrush API.`,
-              variant: "default",
             });
             break;
 
@@ -372,10 +354,8 @@ const Dashboard = () => {
             setSemrushQueuePosition(null);
             setActiveSemrushUserId(null);
             setPhase("optimizing");
-            toast({
-              title: "Semrush Access Granted",
+            toast.success("Semrush Access Granted", {
               description: data.message || "Starting SEO optimization.",
-              variant: "success",
             });
             break;
 
@@ -385,17 +365,18 @@ const Dashboard = () => {
             console.log("--- DEBUG: Received SEO Update/Iteration Start ---");
             console.log("Data for SEO update:", data);
 
-            if (typeof data.iteration === "number") {
-              setIterations(data.iteration);
-              console.log("Setting iterations to:", data.iteration);
-            } else {
-              console.warn("SEO Update: 'iteration' not a number or missing.", data.iteration);
-            }
-            if (typeof data.seo_score === "number") {
-              setSeoScore(data.seo_score);
-              console.log("Setting SEO Score to:", data.seo_score);
-            } else {
-              console.warn("SEO Update: 'seo_score' not a number or missing.", data.seo_score);
+            if (typeof data.iteration === "number" || typeof data.seo_score === "number") {
+              flushSync(() => {
+                if (typeof data.iteration === "number") {
+                  setIterations(data.iteration);
+                  console.log("✅ Iteration flushed to:", data.iteration);
+                }
+                if (typeof data.seo_score === "number") {
+                  setSeoScore(data.seo_score);
+                  console.log("✅ SEO Score flushed to:", data.seo_score);
+                }
+                setPhase("optimizing");
+              });
             }
             if (data.blog_chunk !== undefined && data.blog_chunk !== null) {
               setBlogContent(prev => {
@@ -503,19 +484,16 @@ const Dashboard = () => {
               }
             } else {
               console.warn("handleMessage: 'complete' event missing blog_content or seo_score.");
-              toast({
-                title: "Generation Finished",
+              toast("Generation Finished", {
                 description: "Blog generation completed, but content or score missing for final save.",
-                variant: "warning",
+                
               });
             }
 
             closeGlobalWebSocket();
             fetchUserHistory(user_id);
-            toast({
-              title: "Optimization Complete!",
+            toast.success("Optimization Complete!", {
               description: `Blog optimized with final SEO Score: ${savedBlogResult?.seo_score || data.seo_score || 'N/A'}`,
-              variant: "success",
             });
             break;
 
@@ -525,10 +503,8 @@ const Dashboard = () => {
               clearTimeout(validationTimeoutRef.current);
               validationTimeoutRef.current = null;
             }
-            toast({
-              title: "Error",
+            toast.error("Error", {
               description: data.message || "Something went wrong.",
-              variant: "destructive",
             });
             console.log(`[DEBUG_SET_IS_GENERATING] Setting isGenerating to FALSE from 'error' event handler.`);
             setIsGenerating(false);
@@ -562,10 +538,8 @@ const Dashboard = () => {
           validationTimeoutRef.current = null;
         }
         console.error("❌ Error parsing WebSocket message! Raw data that caused error:", event.data, "Error:", error);
-        toast({
-          title: "Error",
+        toast.error("Error", {
           description: "Invalid data received from server. Check console for raw data.",
-          variant: "destructive",
         });
         console.log(`[DEBUG_SET_IS_GENERATING] Setting isGenerating to FALSE from WebSocket parsing error catch block.`);
         setIsGenerating(false);
@@ -583,7 +557,7 @@ const Dashboard = () => {
       }
     },
     [
-      toast,
+      
       closeGlobalWebSocket,
       saveBlogToDB,
       logDebug,
@@ -645,20 +619,17 @@ const Dashboard = () => {
 
   const handleSubmit = useCallback((): void => {
     if (!isLoggedIn) {
-      toast({
-        title: "Login Required",
+      toast("Login Required", {
         description: "Please log in to generate a blog.",
-        variant: "default",
+      // no variant needed for default
       });
       openLoginModal();
       return;
     }
 
     if (!localTopic.trim()) {
-      toast({
-        title: "Missing Topic",
+      toast.error("Missing Topic", {
         description: "Please enter a topic to proceed.",
-        variant: "destructive",
       });
       return;
     }
@@ -721,10 +692,8 @@ const Dashboard = () => {
       (errorEvent) => {
         logDebug(`[ERROR_CALLBACK] WebSocket Error, setting isGenerating to false`);
         console.error("WebSocket Error (Dashboard via Context):", errorEvent);
-        toast({
-          title: "Connection Error",
+        toast.error("Connection Error", {
           description: "WebSocket failed to connect. Check server status.",
-          variant: "destructive",
         });
         console.log(`[DEBUG_SET_IS_GENERATING] Setting isGenerating to FALSE from WebSocket onError callback.`);
         setIsGenerating(false);
@@ -743,13 +712,28 @@ const Dashboard = () => {
       },
       () => {
         logDebug("WebSocket closed (Dashboard via Context).");
+        toast.error("Generation Halted", {
+          description: "Server disconnected the generation process.",
+        });
+        setIsGenerating(false);
+        setIsBlogGenerated(false);
+        setPhase("idle");
+        if (validationTimeoutRef.current) {
+          clearTimeout(validationTimeoutRef.current);
+          validationTimeoutRef.current = null;
+        }
+        setIsWaitingForSemrush(false);
+
+        setSemrushQueuePosition(null);
+
+        setActiveSemrushUserId(null);
       }
     );
   }, [
     localTopic,
     isLoggedIn,
     user_id,
-    toast,
+    
     openLoginModal,
     setTopicBeingGenerated,
     setLocalTopic,
@@ -776,6 +760,7 @@ const Dashboard = () => {
   ]);
 
   const handleNewBlogClick = useCallback(() => {
+   
 
     console.log(`[DEBUG_SET_IS_GENERATING] Setting isGenerating to FALSE from handleNewBlogClick.`);
 
@@ -818,34 +803,34 @@ const Dashboard = () => {
     setTimeout(() => { setShowTopicInput(true); }, 50);
 
 
-
+    setIsStartingNewBlog(true);
     navigate('/dashboard', { replace: true });
     window.scrollTo(0, 0);
+    setTimeout(() => {
+      setIsStartingNewBlog(false);
+    }, 200);
 
-
-    toast({
-
-      title: "New Blog Started",
-
+    toast("New Blog Started", {
       description: "Previous generation terminated. Ready for a fresh topic!",
-
-      variant: "default",
-
     });
 
+    // if () { // Only create a new controller if we expect to load a blog
+    //   abortControllerRef.current = new AbortController();
+    //   fetchBlogDetails(selectedBlogId, abortControllerRef.current.signal);
+    //   console.log(`[DEBUG_NEW_BLOG_CLICK] Initiated fetchBlogDetails with new AbortController for blog ID: ${selectedBlogId}`);
+    // }
 
 
-  }, [navigate, setLocalTopic, setBlogContent, setIsBlogGenerated, setSeoScore, setIterations, setReasons, setRecommendations, setCurrentBlogId, setPhase, setValidationSuccessMessage, closeGlobalWebSocket, setShowTopicInput, setTopicBeingGenerated, setIsGenerating, toast, setIsWaitingForSemrush, setSemrushQueuePosition, setActiveSemrushUserId]);
+
+  }, [navigate, setLocalTopic, setBlogContent, setIsBlogGenerated, setSeoScore, setIterations, setReasons, setRecommendations, setCurrentBlogId, setPhase, setValidationSuccessMessage, closeGlobalWebSocket, setShowTopicInput, setTopicBeingGenerated, setIsGenerating,  setIsWaitingForSemrush, setSemrushQueuePosition, setActiveSemrushUserId]);
 
   
 
   const handleModelSelectClick = (e: React.MouseEvent): void => {
     if (!isLoggedIn) {
       e.preventDefault();
-      toast({
-        title: "Login Required",
+      toast("Login Required", {
         description: "Please log in to select an AI model.",
-        variant: "default",
       });
       openLoginModal();
     }
@@ -882,7 +867,7 @@ const Dashboard = () => {
         } else {
           console.error("Failed to fetch user history:", data.message || data.error || "Unknown error");
           setBlogHistory([]);
-          toast({
+          ({
             title: "History Error",
             description: data.message || data.error || "Failed to load blog history.",
             variant: "destructive",
@@ -891,18 +876,22 @@ const Dashboard = () => {
       } catch (error: any) {
         console.error("Error fetching user history:", error);
         setBlogHistory([]);
-        toast({
-          title: "History Error",
+        toast.error("History Error", {
           description: `Failed to load blog history: ${error.message}`,
-          variant: "destructive",
         });
       }
     };
 
     fetchHistory();
-  }, [isLoggedIn, setBlogHistory, logDebug, toast, user_id]);
+  }, [isLoggedIn, setBlogHistory, logDebug,  user_id]);
 
+  const [isStartingNewBlog, setIsStartingNewBlog] = useState(false);
   useEffect((): void => {
+    if (isStartingNewBlog) {
+      console.log("[DEBUG_BLOCK] Skipping fetchBlogContentById due to new blog initialization.");
+      return; // ⛔ Block fetch if we're in the middle of starting a new blog
+    }
+
     const blogIdParam = urlSearchParams.get('blogId');
 
     if (blogIdParam && Number(blogIdParam) !== currentBlogId) {
@@ -910,7 +899,8 @@ const Dashboard = () => {
       fetchBlogContentById(Number(blogIdParam));
     } else if (!blogIdParam && currentBlogId) {
       if (!isGenerating) {
-        console.log(`[DEBUG_SET_IS_GENERATING] Setting isGenerating to FALSE from URL param change (no blogId and currentBlogId exists)`);
+        console.log(`[DEBUG_CLEAR] No blogId in URL, but currentBlogId exists — resetting blog state.`);
+
         setLocalTopic("");
         setBlogContent(null);
         setIsBlogGenerated(false);
@@ -926,8 +916,26 @@ const Dashboard = () => {
         setActiveSemrushUserId(null);
       }
     }
-  }, [urlSearchParams, fetchBlogContentById, currentBlogId, isGenerating, setLocalTopic, setBlogContent, setIsBlogGenerated, setSeoScore, setIterations, setReasons, setRecommendations, setCurrentBlogId, setPhase, setValidationSuccessMessage, setIsWaitingForSemrush, setSemrushQueuePosition, setActiveSemrushUserId]);
-
+  }, [
+    urlSearchParams,
+    fetchBlogContentById,
+    currentBlogId,
+    isGenerating,
+    isStartingNewBlog, // <-- key dependency!
+    setLocalTopic,
+    setBlogContent,
+    setIsBlogGenerated,
+    setSeoScore,
+    setIterations,
+    setReasons,
+    setRecommendations,
+    setCurrentBlogId,
+    setPhase,
+    setValidationSuccessMessage,
+    setIsWaitingForSemrush,
+    setSemrushQueuePosition,
+    setActiveSemrushUserId
+  ]);
   useEffect((): void => {
     if (livePreviewRef.current && blogContent) {
       livePreviewRef.current.scrollIntoView({ behavior: "smooth" });
@@ -992,12 +1000,7 @@ const Dashboard = () => {
           </CardHeader>
 
           <CardContent className="p-6 space-y-6">
-            {/* {!isLoggedIn && (
-              // <div className="bg-blue-50 border border-blue-200 text-blue-800 p-4 rounded-lg flex items-center justify-center text-center shadow-sm animate-fade-in">
-              //   <TriangleAlert className="h-5 w-5 mr-2 text-blue-600" />
-              //   <p className="font-semibold">Please log in to start generating blogs.</p>
-              // </div>
-            )} */}
+            
 
             {validationSuccessMessage && (
               <div className="bg-green-50 border border-green-200 text-green-800 p-5 rounded-lg shadow-sm animate-fade-in flex items-center justify-center text-center">
@@ -1027,11 +1030,13 @@ const Dashboard = () => {
               </select>
             </div>
 
+            
             <div className="space-y-2">
               <label htmlFor="topic" className="flex items-center gap-2 text-sm font-semibold text-gray-700">
                 <Pencil className="h-5 w-5 text-gray-600" />
                 Enter Topic for your Blog
               </label>
+
               {showTopicInput && (
                 <Textarea
                   id="topic"
@@ -1042,8 +1047,10 @@ const Dashboard = () => {
                   key={currentBlogId || 'new-topic'}
                   onKeyDown={handleTextareaKeyDown}
                   tabIndex={0}
-                  style={{ pointerEvents: 'auto' }}
-                  className="h-40 resize-y rounded-md border border-gray-300 px-4 py-3 text-gray-800 shadow-sm focus:border-blue-500 focus:ring-blue-500 transition duration-200 ease-in-out"
+                  disabled={!isLoggedIn} // 👈 This disables it if not logged in
+                  style={{ pointerEvents: isLoggedIn ? 'auto' : 'none' }}
+                  className={`h-40 resize-y rounded-md border px-4 py-3 text-gray-800 shadow-sm transition duration-200 ease-in-out
+        ${isLoggedIn ? 'border-gray-300 focus:border-blue-500 focus:ring-blue-500' : 'bg-gray-100 text-gray-400 cursor-not-allowed'}`}
                 />
               )}
             </div>
@@ -1085,7 +1092,7 @@ const Dashboard = () => {
             )}
 
             {/* Conditional rendering for the entire "Blog Generation Status" card */}
-            {(isGenerating || isBlogGenerated) && (
+            {(isGenerating || isBlogGenerated)  && isLoggedIn && (
               <div className="bg-gradient-to-r from-blue-50 to-purple-50 bg-[length:200%_200%] animate-pulse-subtle p-6 rounded-lg shadow-lg border border-gray-200 space-y-4 transition-all duration-300 hover:shadow-xl" ref={liveTrackscore} id ="track-score">
                 <style>{`
             @keyframes pulse-subtle {
@@ -1190,8 +1197,8 @@ const Dashboard = () => {
             <Button
               onClick={handleNewBlogClick}
               className="px-6 py-3 text-lg font-semibold rounded-lg shadow-md transition-all duration-300 ease-in-out
-                         bg-gray-200 text-gray-700 hover:bg-gray-300 focus:outline-none focus:ring-4 focus:ring-gray-400
-                         disabled:opacity-70 disabled:cursor-not-allowed"
+                               bg-gray-200 text-gray-700 hover:bg-gray-300 focus:outline-none focus:ring-4 focus:ring-gray-400
+                               disabled:opacity-70 disabled:cursor-not-allowed"
             >
               New Blog
             </Button>
@@ -1200,8 +1207,8 @@ const Dashboard = () => {
               onClick={handleSubmit}
               disabled={isGenerating || !localTopic.trim() || !isLoggedIn}
               className="px-8 py-3 text-lg font-semibold rounded-lg shadow-md transition-all duration-300 ease-in-out
-                                bg-blue-600 text-white hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-300
-                                disabled:bg-gray-300 disabled:text-gray-500 disabled:cursor-not-allowed"
+                                 bg-blue-600 text-white hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-300
+                                 disabled:bg-gray-300 disabled:text-gray-500 disabled:cursor-not-allowed"
             >
               {isGenerating ? (
                 <>
@@ -1213,9 +1220,7 @@ const Dashboard = () => {
                       ? "Validating Topic..."
                       : phase === "generating" // Priority 3: Initial Draft Generation (before first SEO score)
                         ? "Generating Initial Draft..."
-                        : phase === "optimizing" // Priority 4: SEO Optimization (covers all sub-steps like fact-checking, regeneration, re-validation)
-                          ? "Running SEO Optimization..."
-                          : "Processing..." // Fallback
+                        : "Running SEO Optimization..." // This covers the 'optimizing' phase without a fallback
                   }
                 </>
               ) : (
@@ -1226,9 +1231,10 @@ const Dashboard = () => {
               )}
             </Button>
           </CardFooter>
+
         </Card>
        
-        {blogContent && (
+        {isLoggedIn && currentBlogId && blogContent &&  (
           <Card id="live-blog-preview" ref={livePreviewRef} className="shadow-xl rounded-lg overflow-hidden border border-gray-200 mt-8 animate-fade-in">
             <CardHeader className="bg-gray-50 p-6 border-b border-gray-200 flex flex-row items-center justify-between" id="live-blog-preview">
               <CardTitle className="text-3xl font-bold text-gray-800 flex items-center gap-3">

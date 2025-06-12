@@ -1,5 +1,5 @@
 // src/components/auth/auth_model.ts
-
+import { useNavigate } from 'react-router-dom'
 import { createContext, useContext, useState, useEffect, useRef, useCallback } from 'react';
 import LoginModal from './LoginModal';
 
@@ -76,7 +76,7 @@ export const AuthModalProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     const [user_id, setUserId] = useState<string | null>(null);
     const [userName, setUserName] = useState<string | null>(null);
     const [blogHistory, setBlogHistory] = useState<BlogHistoryItem[]>([]);
-
+    const navigate = useNavigate();
     const [isGenerating, setIsGenerating] = useState(false);
     const [isBlogGenerated, setIsBlogGenerated] = useState(false);
     const [seoScore, setSeoScore] = useState<number | null>(null);
@@ -162,6 +162,8 @@ export const AuthModalProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         setTopicBeingGenerated("");
         setValidationSuccessMessage("");
         closeGlobalWebSocket();
+        navigate('/dashboard', { replace: true });
+        setCurrentBlogId(null); 
     };
 
     const closeGlobalWebSocket = useCallback(() => {
